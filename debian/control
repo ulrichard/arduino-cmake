@@ -1,0 +1,13 @@
+Source: arduino-cmake
+Section: electronics
+Priority: optional
+Maintainer: Richard Ulrich <richi@paraeasy.ch>
+Build-Depends: debhelper, arduino, cmake
+standards-Version: 3.9.3
+Homepage:https://github.com/ulrichard/arduino-cmake
+
+Package: arduino-cmake
+Architecture: all
+Depends: ${misc:Depends}, arduino, cmake
+Description: Compiling and flashing arduino sketches with cmake in your prefered environment.
+

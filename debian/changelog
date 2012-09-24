@@ -1,0 +1,5 @@
+arduino-cmake (0.0.1~precise) precise; urgency=low
+
+  * initial package
+
+ -- Richard Ulrich <richi@paraeasy.ch>  Mon, 24 Sep 2012 22:54:44 +0200

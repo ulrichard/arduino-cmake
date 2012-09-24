@@ -1,0 +1,2 @@
+cmake/ArduinoToolchain.cmake /usr/share/arduino-cmake/
+cmake/Platform/Arduino.cmake /usr/share/arduino-cmake/Platform/
