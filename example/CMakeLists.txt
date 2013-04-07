@@ -9,22 +9,39 @@ set(ARDUINO_DEFAULT_PORT /dev/ttyUSB0) # Default Port, when not specified
 #====================================================================#
 # master_writer example from Wire library
 #====================================================================#
-generate_arduino_example(Wire master_writer)
+generate_arduino_example(wire_example
+                         LIBRARY Wire
+                         EXAMPLE master_writer)
 
+# Alternative: by vairables
+#set(wire_example_LIBRARY Wire)
+#set(wire_example_EXAMPLE master_writer)
+#
+#generate_arduino_example(wire_example)
 
 
 
 #====================================================================#
 # Original blink sketch (from Arduino SDK examples)
 #====================================================================#
+
+# Some installations have renamed the example directories
+if (EXISTS "${ARDUINO_SDK_PATH}/examples/01.Basics/Blink")
+    set(BLINK_SKETCH "${ARDUINO_SDK_PATH}/examples/01.Basics/Blink")
+else()
+    set(BLINK_SKETCH "${ARDUINO_SDK_PATH}/examples/1.Basics/Blink")
+endif()
+
 generate_arduino_firmware(blink_original
-    SKETCH ${ARDUINO_SDK_PATH}/examples/1.Basics/Blink
+    SKETCH "${BLINK_SKETCH}"
     PORT  /dev/ttyACM0
+    SERIAL picocom @SERIAL_PORT@
     BOARD uno)
 
 # Alternative: by variables
-#set(blink_original_SKETCH ${ARDUINO_SDK_PATH}/examples/1.Basics/Blink)
-#set(blink_original_PORT  ${ARDUINO_PORT})
+#set(blink_original_SKETCH "${BLINK_SKETCH}")
+#set(blink_original_PORT  /dev/ttyACM)
+#set(blink_original_SERIAL picocom @SERIAL_PORT@)
 #set(blink_original_BOARD uno)
 #
 #generate_arduino_firmware(blink_original)
@@ -61,7 +78,6 @@ generate_arduino_library(blink_lib
 # Alternative: by variables
 #set(blink_lib_SRCS blink_lib.cpp)
 #set(blink_lib_HDRS blink_lib.h)
-#set(blink_lib_PORT /dev/ttyACM0)
 #set(blink_lib_BOARD uno)
 #
 #generate_arduino_library(blink_lib)
@@ -80,5 +96,6 @@ generate_arduino_firmware(blink
 # Alternative: by variables
 #set(blink_SRCS blink.cpp)
 #set(blink_LIBS blink_lib)
+#set(blink_BOARD uno)
 #
 #generate_arduino_firmware(blink)

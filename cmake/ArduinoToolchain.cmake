@@ -38,7 +38,17 @@ endif()
 #=============================================================================#
 if(NOT ARDUINO_SDK_PATH)
     set(ARDUINO_PATHS)
-    foreach(VERSION 22 1)
+
+    foreach(DETECT_VERSION_MAJOR 1)
+        foreach(DETECT_VERSION_MINOR RANGE 5 0)
+            list(APPEND ARDUINO_PATHS arduino-${DETECT_VERSION_MAJOR}.${DETECT_VERSION_MINOR})
+            foreach(DETECT_VERSION_PATCH  RANGE 3 0)
+                list(APPEND ARDUINO_PATHS arduino-${DETECT_VERSION_MAJOR}.${DETECT_VERSION_MINOR}.${DETECT_VERSION_PATCH})
+            endforeach()
+        endforeach()
+    endforeach()
+
+    foreach(VERSION RANGE 23 19)
         list(APPEND ARDUINO_PATHS arduino-00${VERSION})
     endforeach()
 

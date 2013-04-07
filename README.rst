@@ -72,12 +72,16 @@ I would like to thank the following people for contributing to **Arduino CMake**
 * Matt Tyler (`matt-tyler`_)
 * Andrew Stromme (`astromme`_)
 * `johnyb`_
+* `arunh`_
+* Sebastian Herp (`sebastianherp`_)
 
 .. _Kernald: https://github.com/Kernald
 .. _jgoppert: https://github.com/jgoppert
 .. _matt-tyler: https://github.com/matt-tyler
 .. _astromme: https://github.com/astromme
 .. _johnyb: https://github.com/johnyb
+.. _arunh: https://github.com/arunh
+.. _sebastianherp: https://github.com/sebastianherp
 
 
 License
@@ -130,6 +134,7 @@ Contents
    1. `undefined reference to `__cxa_pure_virtual'`_
    2. `Arduino Mega 2560 image does not work`_
    3. `Library not detected automatically`_
+   4. `error: attempt to use poisoned "SIG_USART0_RECV"`_
 
 8. `Resources`_
 
@@ -216,7 +221,7 @@ For a more detailed explanation, please read on...
 
    In order to get access to the serial port use the following in your command::
 
-        @INPUT_PORT@
+        @SERIAL_PORT@
 
    That constant will get replaced with the actual serial port used (see uploading). In the case of our example configuration we can get the serial terminal by executing the following::
 
@@ -290,6 +295,8 @@ The options are:
 +--------------------+----------------------------------------------------------------------+------------------------------------+
 | **NO_AUTOLIBS**    | Disable Arduino library detection *(default On)*                     |                                    |
 +--------------------+----------------------------------------------------------------------+------------------------------------+
+| **MANUAL**         | Disable Arduino Core (enables pure AVR development)                  |                                    |
++--------------------+----------------------------------------------------------------------+------------------------------------+
 
 You can specify the options in two ways, either as the command arguments or as variables. When specifying the options as variables they must be named::
 
@@ -339,12 +346,12 @@ Once defined there will be two targets available for uploading, ``${TARGET_NAME}
 
 Serial Terminal
 _______________
-To enable serial terminal, use the ``SERIAL`` option (``@INPUT_PORT@`` will be replaced with the ``PORT`` option)::
+To enable serial terminal, use the ``SERIAL`` option (``@SERIAL_PORT@`` will be replaced with the ``PORT`` option)::
 
     set(blink_SRCS  blink.cpp)
     set(blink_HDRS  blink.h)
     set(blink_PORT  /dev/ttyUSB0)
-    set(blink_SERIAL "picocom @INPUT_PORT@ -b 9600 -l")
+    set(blink_SERIAL picocom @SERIAL_PORT@ -b 9600 -l)
     set(blink_BOARD uno)
 
     generate_arduino_firmware(blink)
@@ -355,7 +362,7 @@ Alternatively::
           SRCS  blink.cpp
           HDRS  blink.h
           PORT  /dev/ttyUSB0
-          SERIAL "picocom @INPUT_PORT@ -b 9600 -l"
+          SERIAL picocom @SERIAL_PORT@ -b 9600 -l
           BOARD uno)
 
 This will create a target named ``${TARGET_NAME}-serial`` (in this example: blink-serial).
@@ -389,6 +396,8 @@ The options are:
 | **LIBS**           | Libraries to link *(sets up dependency tracking)*                    |                                    |
 +--------------------+----------------------------------------------------------------------+------------------------------------+
 | **NO_AUTOLIBS**    | Disable Arduino library detection *(default On)*                     |                                    |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **MANUAL**         | Disable Arduino Core (enables pure AVR development)                  |                                    |
 +--------------------+----------------------------------------------------------------------+------------------------------------+
 
 You can specify the options in two ways, either as the command arguments or as variables. When specifying the options as variables they must be named::
@@ -437,6 +446,10 @@ To build a Arduino sketch use the **SKETCH** option (see `Creating firmware imag
 
 This will build the **blink** example from the **Arduino SDK**.
 
+Note: When specifying the sketch directory path, arduino-cmake is expecting to find a sketch file named after the directory (with a extension of .pde or .ino).
+
+You can also specify the path to the main sketch file, then the parent directory of that sketch will be search for additional sketch files.
+
 Arduino Libraries
 ~~~~~~~~~~~~~~~~~
 
@@ -482,18 +495,57 @@ Arduino Library Examples
 
 Most Arduino libraries have examples bundled with them. If you would like to generate and upload some of those examples you can use the `generate_arduino_example` command. The syntax of the command is::
 
-    generate_arduino_example(LIBRARY_NAME EXAMPLE_NAME BOARD_ID [SERIAL_PORT] [SERIAL_COMMAND] [PROGRAMMER_ID])
+    generate_arduino_example(target_name
+                             LIBRARY library_name
+                             EXAMPLE example_name
+                             [BOARD  board_id]
+                             [PORT port]
+                             [SERIAL serial command]
+                             [PORGRAMMER programmer_id]
+                             [AFLAGS avrdude_flags])
 
-where **SERIAL_PORT**, **SERIAL_COMMAND** and **PROGRAMMER_ID** are optional.
+The options are:
+
+
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **Name**           | **Description**                                                      | **Required**                       |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **LIBRARY**        | Library name.                                                        | **REQUIRED**                       |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **EXAMPLE**        | Example name.                                                        | **REQUIRED**                       |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **BOARD**          | Board ID *(such as uno, mega2560, ...)*                              | **REQUIRED**                       |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **PORT**           | Serial port, for upload and serial targets (see `Upload Firmware`_)  |                                    |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **SERIAL**         | Serial command for serial target (see `Serial Terminal`_)            |                                    |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **PROGRAMMER**     | Programmer ID, enables programmer burning (see `Programmers`_).      |                                    |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **AFLAGS**         | avrdude flags for target                                             |                                    |
++--------------------+----------------------------------------------------------------------+------------------------------------+
 
 To generate a target for the **master_writer** example from the **Wire** library for the **Uno**::
 
-    generate_arduino_example(Wire master_writer uno /dev/ttyACM0)
+    generate_arduino_example(wire_example
+                             LIBRARY Wire
+                             EXAMPLE master_writer
+                             BOARD uno
+                             PORT  /dev/ttyUSB0)
+
+You can also rewrite the previous like so::
+
+    set(wire_example_LIBRARY Wire)
+    set(wire_example_EXAMPLE master_writer)
+    set(wire_example_BOARD uno)
+    set(wire_example_PORT /dev/ttyUSB0)
+
+    generate_arduino_example(wire_example)
 
 The previous example will generate the following two target::
 
-    example-Wire-master_writer
-    example-Wire-master_writer-upload
+    wire_example
+    wire_example-upload
 
 Compiler and Linker Flags
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -593,8 +645,20 @@ Note: You must create a new build system if you change **ARDUINO_SDK_PATH**.
 
 When **Arduino CMake** is configured properly, these options are defined:
 
-* **ARDUINO_FOUND** - Set to True when the **Arduino SDK** is detected and configured.
-* **ARDUINO_SDK_VERSION** - Version of the detected **Arduino SDK** (ex: 1.0)
++---------------------------------+-----------------------------------------------------+
+| **Name**                        | **Description**                                     |
++---------------------------------+-----------------------------------------------------+
+| **ARDUINO_FOUND**               | Set to True when the **Arduino SDK** is detected    |
+|                                 | and configured.                                     |
++---------------------------------+-----------------------------------------------------+
+| **ARDUINO_SDK_VERSION**         | Full version of the **Arduino SDK** (ex: 1.0.0)     |
++---------------------------------+-----------------------------------------------------+
+| **ARDUINO_SDK_VERSION_MAJOR**   | Major version of the **Arduino SDK** (ex: 1)        |
++---------------------------------+-----------------------------------------------------+
+| **ARDUINO_SDK_VERSION_MINOR**   | Minor version of the **Arduino SDK** (ex: 0)        |
++---------------------------------+-----------------------------------------------------+
+| **ARDUINO_SDK_VERSION_PATCH**   | Patch version of the **Arduino SDK** (ex: 0)        |
++---------------------------------+-----------------------------------------------------+
 
 Miscellaneous Functions
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -749,7 +813,7 @@ Where ``/dev/tty.usbmodemXXX`` is the terminal device. To exit press ``C-a C-\``
 
 CMake configuration example::
 
-    set(${FIRMWARE_NAME}_SERIAL screen @INPUT_PORT@)
+    set(${FIRMWARE_NAME}_SERIAL screen @SERIAL_PORT@)
 
 
 
@@ -821,7 +885,7 @@ Putty is a great multi-protocol terminal, which supports SSH, Telnet, Serial, an
 
 CMake configuration example (assuming putty is on the **System Path**)::
 
-    set(${FIRMWARE_NAME}_SERIAL putty -serial @INPUT_PORT@)
+    set(${FIRMWARE_NAME}_SERIAL putty -serial @SERIAL_PORT@)
 
 Putty - http://tartarus.org/~simon/putty-snapshots/x86/putty-installer.exe
 
@@ -958,7 +1022,22 @@ To register a non-standard directory containing Arduino libraries, use the follo
 Remember to **use this command before defining the firmware**, which requires the library from that directory.
 
 
+error: attempt to use poisoned "SIG_USART0_RECV"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+If you get the following error::
+
+    /usr/share/arduino/hardware/arduino/cores/arduino/HardwareSerial.cpp:91:41: error: attempt to use poisoned "SIG_USART0_RECV"
+    /usr/share/arduino/hardware/arduino/cores/arduino/HardwareSerial.cpp:101:15: error: attempt to use poisoned "SIG_USART0_RECV"
+    /usr/share/arduino/hardware/arduino/cores/arduino/HardwareSerial.cpp:132:15: error: attempt to use poisoned "SIG_USART1_RECV"
+    /usr/share/arduino/hardware/arduino/cores/arduino/HardwareSerial.cpp:145:15: error: attempt to use poisoned "SIG_USART2_RECV"
+    /usr/share/arduino/hardware/arduino/cores/arduino/HardwareSerial.cpp:158:15: error: attempt to use poisoned "SIG_USART3_RECV"
+
+You probably recently upgraded `avr-libc` to the latest version, which has deperecated the use of these symbols. There is a `Arduino Patch`_ which
+fixes these error, you can read more about this bug here: `Arduino Bug ISSUE 955`_.
+
+.. _Arduino Bug ISSUE 955: http://code.google.com/p/arduino/issues/detail?id=955
+.. _Arduino Patch: http://arduino.googlecode.com/issues/attachment?aid=9550004000&name=sig-patch.diff&token=R2RWB0LZXQi8OpPLsyAdnMATDNU%3A1351021269609
 
 Resources
 ---------
