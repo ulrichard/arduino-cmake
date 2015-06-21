@@ -6,13 +6,13 @@ Arduino is a great development platform, which is easy to use. It has everything
 
 One major drawback of the *Arduino IDE* is that you cannot do anything without it, which for me is a **complete buzz kill**. Thats why I created an alternative build system for the Arduino using CMake.
 
-CMake is great cross-platform build system that works on practically any operating system. With it you are not constrained to a single build system. CMake lets you generated the build system that fits your needs, using the tools you like. It can generate any type of build system, from simple Makefiles, to complete projects for Eclipse, Visual Studio, XCode, etc.
+CMake is great cross-platform build system that works on practically any operating system. With it you are not constrained to a single build system. CMake lets you generate the build system that fits your needs, using the tools you like. It can generate any type of build system, from simple Makefiles, to complete projects for Eclipse, Visual Studio, XCode, etc.
 
 The **Arduino CMake** build system integrates tightly with the *Arduino SDK*.
 
 *Arduino SDK* version **0.19** or higher is required.
 
-So if you like to do things from the command line (using make), or to build you're firmware where you're in control, or if you would like to use an IDE such as Eclipse, KDevelop, XCode, CodeBlocks or something similar,  then **Arduino CMake** is the system for you.
+So if you like to do things from the command line (using make), or to build your firmware where you're in control, or if you would like to use an IDE such as Eclipse, KDevelop, XCode, CodeBlocks or something similar,  then **Arduino CMake** is the system for you.
 
 Features
 --------
@@ -25,6 +25,7 @@ Features
 * Generates libraries.
 * Sketch support.
 * Upload support.
+* Hardware Platform support.
 * Programmer support (with bootloader upload).
 * Supports multiple build system types (Makefiles, Eclipse, KDevelop, CodeBlocks, XCode, etc).
 * Cross-platform: Windows, Linux, Mac
@@ -34,7 +35,7 @@ Features
 Feedback
 --------
 
-**Arduino CMake** is hosted on GitHUB and is available at:
+**Arduino CMake** is hosted on GitHub and is available at:
 
 https://github.com/queezythegreat/arduino-cmake
 
@@ -43,7 +44,7 @@ Did you find a bug or would like a specific feature, please report it at:
 https://github.com/queezythegreat/arduino-cmake/issues
 
 If you would like to hack on this project, don't hesitate to fork it on GitHub.
-I will be glad to integrate you'r changes if you send me a ``Pull Request``.
+I will be glad to integrate your changes if you send me a ``Pull Request``.
 
 
 Requirements
@@ -74,6 +75,19 @@ I would like to thank the following people for contributing to **Arduino CMake**
 * `johnyb`_
 * `arunh`_
 * Sebastian Herp (`sebastianherp`_)
+* Michael Daffin (`james147`_)
+* Pavel Ilin (`PIlin`_)
+* Igor Mikolic-Torreira (`igormiktor`_)
+* Claudio Henrique Fortes Felix (`chffelix`_)
+* Alexandre Tuleu (`atuleu`_)
+* `getSurreal`_
+* Sebastian Zaffarano (`szaffarano`_)
+* `cheshirekow`_
+* Logan Engstrom (`meadowstream`_) 
+* Francisco Ramírez (`franramirez688`_)
+* Brendan Shillingford (`bshillingford`_)
+* Mike Purvis (`mikepurvis`_) 
+* Steffen Hanikel (`hanikesn`_)
 
 .. _Kernald: https://github.com/Kernald
 .. _jgoppert: https://github.com/jgoppert
@@ -82,7 +96,19 @@ I would like to thank the following people for contributing to **Arduino CMake**
 .. _johnyb: https://github.com/johnyb
 .. _arunh: https://github.com/arunh
 .. _sebastianherp: https://github.com/sebastianherp
-
+.. _james147: https://github.com/james147
+.. _PIlin: https://github.com/PIlin
+.. _igormiktor: https://github.com/igormiktor
+.. _chffelix: https://github.com/chffelix
+.. _atuleu: https://github.com/atuleu
+.. _getSurreal: https://github.com/getSurreal
+.. _szaffarano: https://github.com/szaffarano
+.. _cheshirekow: https://github.com/cheshirekow
+.. _meadowstream: https://github.com/meadowstream
+.. _franramirez688: https://github.com/franramirez688
+.. _bshillingford: https://github.com/bshillingford
+.. _mikepurvis: https://github.com/mikepurvis
+.. _hanikesn: https://github.com/hanikesn
 
 License
 -------
@@ -108,9 +134,10 @@ Contents
    5. `Arduino Library Examples`_
    6. `Compiler and Linker Flags`_
    7. `Programmers`_
-   8. `Advanced Options`_
-   9. `Miscellaneous Functions`_
-   10. `Bundling Arduino CMake`_
+   8. `Pure AVR Development`_
+   9. `Advanced Options`_
+   10. `Miscellaneous Functions`_
+   11. `Bundling Arduino CMake`_
 
 3. `Linux Environment`_
 
@@ -174,16 +201,16 @@ For a more detailed explanation, please read on...
 
 2. Creating a build directory
 
-   The second order of business is creating a build directory. CMake has a great feature called out-of-source builds, what this means is the building is done in a completely separate directory, than where the sources are. The benefits of this is you don't have any clutter in you source directory and you won't accidentally commit something in, that is auto-generated.
+   The second order of business is creating a build directory. CMake has a great feature called out-of-source builds, what this means is the building is done in a completely separate directory from where the sources are. The benefit of this is you don't have any clutter in you source directory and you won't accidentally commit something that is auto-generated.
 
-   So lets create that build directory::
+   So let's create that build directory::
 
         mkdir build
         cd build
 
 3. Creating the build system
 
-   Now lets create the build system that will create our firmware::
+   Now let's create the build system that will create our firmware::
 
         cmake ..
 
@@ -290,6 +317,10 @@ The options are:
 | **SERIAL**         | Serial command for serial target (see `Serial Terminal`_)            |                                    |
 +--------------------+----------------------------------------------------------------------+------------------------------------+
 | **PROGRAMMER**     | Programmer ID, enables programmer burning (see `Programmers`_).      |                                    |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **ARDLIBS**        | Manual list of Arduino type libraries, common use case is when the   |                                    |
+|                    | library header name does not match the librarie's directory name.    |                                    |
+|                    | **ADVANCED OPTION!** Can be used in conjuction with **NO_AUTOLIBS**. |                                    |
 +--------------------+----------------------------------------------------------------------+------------------------------------+
 | **AFLAGS**         | avrdude flags for target                                             |                                    |
 +--------------------+----------------------------------------------------------------------+------------------------------------+
@@ -406,7 +437,7 @@ You can specify the options in two ways, either as the command arguments or as v
 
 Where **${TARGET_NAME}** is the name of you target and **${OPTION_NAME}** is the name of the option.
 
-Lets define a simple library called ``blink_lib``, with two sources files for the *Arduino Uno*::
+Let's define a simple library called ``blink_lib`` with two sources files for the *Arduino Uno*::
 
     set(blink_lib_SRCS  blink_lib.cpp)
     set(blink_lib_HDRS  blink_lib.h)
@@ -421,7 +452,7 @@ The other way of defining the same thing is::
         HDRS  blink_lib.h
         BOARD uno)
 
-Once that library is defined we can use it in our other firmware images... Lets add ``blink_lib`` to the ``blink`` firmware::
+Once that library is defined we can use it in our other firmware images... Let's add ``blink_lib`` to the ``blink`` firmware::
 
     set(blink_SRCS  blink.cpp)
     set(blink_HDRS  blink.h)
@@ -457,14 +488,14 @@ Libraries are one of the more powerful features which the Arduino offers to user
 The structure of these libraries is very simple, which makes them easy to create.
 
 An Arduino library is **any directory which contains a header named after the directory**, simple.
-Any source files contained within that directory is part of the library. Here is a example of library a called ExampleLib::
+Any source files contained within that directory are part of the library. Here is a example of library a called ExampleLib::
 
     ExampleLib/
       |-- ExampleLib.h
       |-- ExampleLib.cpp
       `-- OtherLibSource.cpp
 
-Now because the power of Arduino lies within those user created libraries, support for them is built right into **Arduino CMake**. The **Arduino SDK** comes with a large number of default libraries, adding new libraries is simple.
+Now because the power of Arduino lies within those user-created libraries, support for them is built right into **Arduino CMake**. The **Arduino SDK** comes with a large number of default libraries and adding new libraries is simple.
 
 To incorporate a library into your firmware, you can do one of three things:
 
@@ -579,7 +610,7 @@ or when configuring the project::
 Programmers
 ~~~~~~~~~~~
 
-**Arduino CMake** fully supports programmers, for burning firmware and bootloader images directly onto the Arduino. 
+**Arduino CMake** fully supports programmers for burning firmware and bootloader images directly onto the Arduino. 
 If you have a programmer that is supported by the *Arduino SDK*, everything should work out of the box.
 As of version 1.0 of the *Arduino SDK*, the following programmers are supported:
 
@@ -612,6 +643,90 @@ Once you have enabled programmer support, two new targets are available in the b
 
 If you need to restore the original **Arduino bootloader** onto your Arduino, so that you can use the traditional way of uploading firmware images via the bootloader, use **${TARGET_NAME}-burn-bootloader** to restore it.
 
+
+Pure AVR Development
+~~~~~~~~~~~~~~~~~~~~
+
+For those developers who don't want any Arduino magic, but still want to utilize the hardware platform you are in luck. This section will outline the `generate_avr_firmware()` and `generate_avr_library()` commands, which enables
+you to compile sources for the given Arduino board.
+
+No Arduino Core or Arduino libraries will get generated, this is for manual compilation of sources. These commands are for people that know what they are doing, or have done pure AVR development.
+People starting out, or just familiar with Arduino should not use these commands.
+
+The `generate_avr_firmware()` command::
+
+    generate_avr_firmware(name
+         [BOARD board_id]
+         [SRCS  src1 src2 ... srcN]
+         [HDRS  hdr1 hdr2 ... hdrN]
+         [LIBS  lib1 lib2 ... libN]
+         [PORT  port]
+         [SERIAL serial_cmd]
+         [PROGRAMMER programmer_id]
+         [AFLAGS flags])
+
+This will compile the sources for the specified Arduino board type.
+
+The options:
+
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **Name**           | **Description**                                                      | **Required**                       |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **BOARD**          | Board ID *(such as uno, mega2560, ...)*                              | **REQUIRED**                       |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **SRCS**           | Source files                                                         | **REQUIRED**                       |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **HDRS**           | Headers files *(for project based build systems)*                    |                                    |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **LIBS**           | Libraries to link *(sets up dependency tracking)*                    |                                    |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **BOARD**          | Board ID *(such as uno, mega2560, ...)*                              | **REQUIRED**                       |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **PORT**           | Serial port, for upload and serial targets (see `Upload Firmware`_)  |                                    |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **SERIAL**         | Serial command for serial target (see `Serial Terminal`_)            |                                    |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **PROGRAMMER**     | Programmer ID, enables programmer burning (see `Programmers`_).      |                                    |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **AFLAGS**         | avrdude flags for target                                             |                                    |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+
+You can specify the options in two ways, either as the command arguments or as variables. When specifying the options as variables they must be named::
+
+    ${TARGET_NAME}_${OPTION_NAME}
+
+Where **${TARGET_NAME}** is the name of you target and **${OPTION_NAME}** is the name of the option.
+
+
+The `generate_avr_library()` command::
+
+    generate_avr_library(name
+         [BOARD board_id]
+         [SRCS  src1 src2 ... srcN]
+         [HDRS  hdr1 hdr2 ... hdrN]
+         [LIBS  lib1 lib2 ... libN])
+
+This will compile a static library for the specified Arduino board type.
+
+The options:
+
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **Name**           | **Description**                                                      | **Required**                       |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **BOARD**          | Board ID *(such as uno, mega2560, ...)*                              | **REQUIRED**                       |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **SRCS**           | Source files                                                         | **REQUIRED**                       |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **HDRS**           | Headers files *(for project based build systems)*                    |                                    |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+| **LIBS**           | Libraries to link *(sets up dependency tracking)*                    |                                    |
++--------------------+----------------------------------------------------------------------+------------------------------------+
+
+You can specify the options in two ways, either as the command arguments or as variables. When specifying the options as variables they must be named::
+
+    ${TARGET_NAME}_${OPTION_NAME}
+
+Where **${TARGET_NAME}** is the name of you target and **${OPTION_NAME}** is the name of the option.
 
 Advanced Options
 ~~~~~~~~~~~~~~~~
@@ -660,6 +775,19 @@ When **Arduino CMake** is configured properly, these options are defined:
 | **ARDUINO_SDK_VERSION_PATCH**   | Patch version of the **Arduino SDK** (ex: 0)        |
 +---------------------------------+-----------------------------------------------------+
 
+
+During compilation, you can enable the following environment variables.
+
++---------------------------------+-----------------------------------------------------+
+| **Name**                        | **Description**                                     |
++---------------------------------+-----------------------------------------------------+
+| **VERBOSE**                     | Enables verbose compilation, displays commands      |
+|                                 | being executed. (Non empty value)                   |
++---------------------------------+-----------------------------------------------------+
+| **VERBOSE_SIZE**                | Enables full/verbose output from avr-size.          |
+|                                 | (Non empty value)                                   |
++---------------------------------+-----------------------------------------------------+
+
 Miscellaneous Functions
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -681,9 +809,32 @@ This section will outlines some of the additional miscellaneous functions availa
     *BOARD_ID* - Board ID
   
   Print the detected Arduino board settings.
+* **register_hardware_platform(HARDWARE_PLATFORM_PATH)**:
+  
+    *HARDWARE_PLATFORM_PATH* - Hardware platform path
+  
+  Registers a ``Hardware Platform`` path. See: `Arduino Platforms PRE 1.5`_ and `Arduino Platforms 1.5`_.
+  
+  A Hardware Platform is a directory containing the following::
+  
+      HARDWARE_PLATFORM_PATH/
+          |-- bootloaders/
+          |-- cores/
+          |-- variants/
+          |-- boards.txt
+          `-- programmers.txt
+  
+  This enables you to register new types of hardware platforms such as the
+  Sagnuino, without having to copy the files into your Arduino SDK.
+  
+  The ``board.txt`` describes the target boards and bootloaders. While
+  ``programmers.txt`` the programmer defintions.
+  
+  A good example of a *Hardware Platform* is in the Arduino SDK: ``${ARDUINO_SDK_PATH}/hardware/arduino/``
 
 
-
+.. _Arduino Platforms PRE 1.5: http://code.google.com/p/arduino/wiki/Platforms
+.. _Arduino Platforms 1.5: http://code.google.com/p/arduino/wiki/Platforms1
 Bundling Arduino CMake
 ~~~~~~~~~~~~~~~~~~~~~~
 
